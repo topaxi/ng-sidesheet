@@ -1,6 +1,6 @@
 {
   "name": "ng-sidesheet",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "peerDependencies": {
     "@angular/cdk": "^6.0.0 || ^7.0.0",
     "@angular/common": "^6.0.0 || ^7.0.0",

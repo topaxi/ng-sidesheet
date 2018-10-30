@@ -19,22 +19,30 @@ export const DEFAULT_CONFIG: SidesheetConfig = {
   overlayCloseOnESC: true
 };
 
+const imports = [CommonModule, RouterModule, PortalModule, OverlayModule];
+const declarations = [
+  SidesheetOutlet,
+  CloseSidesheetComponent,
+  ScrollShadowDirective,
+  SidesheetComponent,
+  SidesheetDirective
+];
+const entryComponents = [SidesheetComponent];
+const exports = [SidesheetOutlet, SidesheetDirective];
+const providers = [
+  {
+    provide: OverlayContainer,
+    useClass: SidesheetOverlayContainer
+  }
+];
+
 @NgModule({
-  imports: [CommonModule, RouterModule, PortalModule, OverlayModule],
-  declarations: [
-    SidesheetOutlet,
-    CloseSidesheetComponent,
-    ScrollShadowDirective,
-    SidesheetComponent,
-    SidesheetDirective
-  ],
-  entryComponents: [SidesheetComponent],
-  exports: [SidesheetOutlet, SidesheetDirective],
+  imports,
+  declarations,
+  entryComponents,
+  exports,
   providers: [
-    {
-      provide: OverlayContainer,
-      useClass: SidesheetOverlayContainer
-    },
+    ...providers,
     {
       provide: SIDESHEET_CONFIG,
       useValue: DEFAULT_CONFIG
@@ -45,7 +53,12 @@ export class NgSidesheetModule {
   static withConfig(config: Partial<SidesheetConfig>) {
     return {
       ngModule: NgSidesheetModule,
+      imports,
+      declarations,
+      entryComponents,
+      exports,
       providers: [
+        ...providers,
         {
           provide: SIDESHEET_CONFIG,
           useValue: { ...DEFAULT_CONFIG, ...config }

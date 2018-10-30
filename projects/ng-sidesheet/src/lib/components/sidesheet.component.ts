@@ -12,6 +12,7 @@ import {
   EmbeddedViewRef,
   ElementRef,
   Inject,
+  InjectionToken,
   NgZone
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
@@ -23,6 +24,7 @@ import {
 } from '@angular/cdk/portal';
 import { sidesheetAnimation } from '../animations/sidesheet.animations';
 import { ScrollShadowDirective } from '../directives/scroll-shadow.directive';
+import { SidesheetConfig, SIDESHEET_CONFIG } from '../sidesheet-config';
 
 @Component({
   selector: 'ng-sidesheet',
@@ -33,12 +35,13 @@ import { ScrollShadowDirective } from '../directives/scroll-shadow.directive';
 })
 export class SidesheetComponent
   implements AfterContentInit, OnDestroy, PortalOutlet {
-  readonly afterClosed = new Subject<void>();
+  private readonly _afterClosed = new Subject<void>();
+
+  readonly afterClosed = this._afterClosed.asObservable();
 
   @HostBinding('@sidesheetAnimation')
   sidesheetAnimation = 'open';
 
-  // tslint:disable-next-line
   @ViewChild(PortalHostDirective)
   private readonly portalHost!: PortalHostDirective;
   @ViewChild('sidesheetScroller')
@@ -57,25 +60,43 @@ export class SidesheetComponent
     return this.ngSidesheet === 'right';
   }
 
+  get showCloseButton(): boolean {
+    return this.config.closeButton;
+  }
+
+  @Input()
+  ngSidesheetOverlay = false;
+
+  @Input()
+  ngSidesheetOverlayCloseOnClick = false;
+
+  @Input()
+  ngSidesheetOverlayCloseOnESC = false;
+
   private attachedPortal: TemplatePortal | null = null;
   private scrollShadow: ScrollShadowDirective;
   private readonly document: Document;
+  private readonly config: Readonly<SidesheetConfig>;
 
   constructor(
-    private readonly zone: NgZone,
-    private readonly cd: ChangeDetectorRef,
+    @Inject(SIDESHEET_CONFIG) config: any,
+    @Inject(NgZone) private readonly zone: NgZone,
+    @Inject(ChangeDetectorRef) private readonly cd: ChangeDetectorRef,
     @Inject(DOCUMENT) document: any
   ) {
+    this.config = config;
     this.document = document;
   }
 
   ngAfterContentInit(): void {
-    this.scrollShadow = new ScrollShadowDirective(
-      this.sidesheetScroller,
-      this.zone,
-      this.document
-    );
-    this.scrollShadow.ngOnInit();
+    if (this.config.scrollShadow) {
+      this.scrollShadow = new ScrollShadowDirective(
+        this.sidesheetScroller,
+        this.zone,
+        this.document
+      );
+      this.scrollShadow.ngOnInit();
+    }
   }
 
   ngOnDestroy(): void {
@@ -106,13 +127,26 @@ export class SidesheetComponent
   @HostListener('@sidesheetAnimation.done', ['$event'])
   onAnimationDone({ fromState, toState }: AnimationEvent): void {
     if (fromState === 'open' && (toState === 'void' || toState === 'closed')) {
-      this.afterClosed.next();
-      this.afterClosed.complete();
+      this._afterClosed.next();
+      this._afterClosed.complete();
     }
   }
 
   close(): void {
     this.sidesheetAnimation = 'closed';
     this.cd.markForCheck();
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  onOverlayESC(e: KeyboardEvent): void {
+    if ((e as any).keyCode === 27 && this.ngSidesheetOverlayCloseOnESC) {
+      this.close();
+    }
+  }
+
+  onOverlayClick(e: MouseEvent): void {
+    if (this.ngSidesheetOverlayCloseOnClick) {
+      this.close();
+    }
   }
 }

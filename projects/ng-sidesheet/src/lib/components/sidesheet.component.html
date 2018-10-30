@@ -1,3 +1,4 @@
-<div #sidesheetScroller class="sidesheet-scroller">
+<button ngCloseSidesheet *ngIf="showCloseButton" (click)="close()"></button>
+<div #sidesheetScroller class="ng-sidesheet-scroller">
   <ng-template cdkPortalOutlet></ng-template>
 </div>

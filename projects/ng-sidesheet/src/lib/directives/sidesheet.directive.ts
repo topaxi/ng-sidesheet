@@ -1,3 +1,4 @@
+import { filter } from 'rxjs/operators';
 import {
   Directive,
   OnChanges,
@@ -5,12 +6,11 @@ import {
   SimpleChanges,
   OnDestroy,
   Input,
-  Output,
-  EventEmitter,
   ViewContainerRef,
   TemplateRef,
   EmbeddedViewRef,
-  Injector
+  Injector,
+  Inject
 } from '@angular/core';
 import {
   PortalInjector,
@@ -19,39 +19,56 @@ import {
 } from '@angular/cdk/portal';
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { SidesheetComponent } from '../components/sidesheet.component';
+import { SIDESHEET_CONFIG, SidesheetConfig } from '../sidesheet-config';
 
-export class SidesheetDirectiveContext {
-  ngSidesheetWith: any = null;
+export class SidesheetDirectiveContext<T> {
+  ngSidesheetWith?: T = undefined;
 }
+
+const noop = () => {};
 
 @Directive({
   selector: '[ngSidesheet]',
   host: { class: 'sidesheet-host' } // tslint:disable-line
 })
-export class SidesheetDirective implements OnChanges, OnDestroy {
+export class SidesheetDirective<T> implements OnChanges, OnDestroy {
   @Input()
   ngSidesheet: 'left' | 'right' = 'right';
 
   @Input()
-  ngSidesheetWith: any = undefined;
+  ngSidesheetWith?: T;
 
   @Input()
-  ngSidesheetOpen = true;
+  ngSidesheetOverlay?: boolean;
 
-  @Output()
-  close = new EventEmitter<void>();
+  @Input()
+  ngSidesheetOverlayCloseOnClick?: boolean;
 
-  private readonly templateContext = new SidesheetDirectiveContext();
+  @Input()
+  ngSidesheetOverlayCloseOnESC?: boolean;
+
+  // Structural directives do not support @Output()..
+  @Input()
+  ngSidesheetClose: () => void = noop;
+
+  private readonly templateContext = new SidesheetDirectiveContext<T>();
   private overlayRef?: OverlayRef = undefined;
   private sidesheet: SidesheetComponent | null = null;
   private scheduled = false;
+  private readonly config: Readonly<SidesheetConfig>;
 
   constructor(
+    @Inject(SIDESHEET_CONFIG) config: any,
     private readonly injector: Injector,
     private readonly viewContainerRef: ViewContainerRef,
-    private readonly templateRef: TemplateRef<SidesheetDirectiveContext>,
+    private readonly templateRef: TemplateRef<SidesheetDirectiveContext<T>>,
     private readonly overlay: Overlay
-  ) {}
+  ) {
+    this.config = config;
+    this.ngSidesheetOverlay = config.overlay;
+    this.ngSidesheetOverlayCloseOnClick = config.overlayCloseOnClick;
+    this.ngSidesheetOverlayCloseOnESC = config.overlayCloseOnESC;
+  }
 
   ngOnChanges({
     ngSidesheet,
@@ -69,7 +86,7 @@ export class SidesheetDirective implements OnChanges, OnDestroy {
     if (ngSidesheetOpen != null) {
       if (ngSidesheetOpen.currentValue) {
         this.scheduleSidesheetCreation();
-      } else {
+      } else if (this.sidesheet != null) {
         this.sidesheet.close();
       }
     }
@@ -86,7 +103,7 @@ export class SidesheetDirective implements OnChanges, OnDestroy {
 
     if (currentValue == null) {
       if (this.sidesheet !== null) {
-        this.viewContainerRef.clear();
+        this.sidesheet.close();
         return;
       }
     } else if (this.sidesheet === null) {
@@ -106,12 +123,19 @@ export class SidesheetDirective implements OnChanges, OnDestroy {
     });
   }
 
-  private createSidesheet(): EmbeddedViewRef<SidesheetDirectiveContext> {
+  private createSidesheet(): EmbeddedViewRef<SidesheetDirectiveContext<T>> {
     if (this.sidesheet !== null) {
       throw new Error('Sidesheet is already rendered!');
     }
 
-    this.overlayRef = this.overlay.create();
+    this.overlayRef = this.overlay.create({
+      hasBackdrop: this.ngSidesheetOverlay
+    });
+
+    this.overlayRef
+      .backdropClick()
+      .pipe(filter(click => this.ngSidesheetOverlayCloseOnClick))
+      .subscribe(click => this.sidesheet.close());
 
     const sidesheetComponentRef = new ComponentPortal(
       SidesheetComponent,
@@ -120,6 +144,9 @@ export class SidesheetDirective implements OnChanges, OnDestroy {
     );
 
     this.sidesheet = this.overlayRef.attach(sidesheetComponentRef).instance;
+    this.sidesheet.ngSidesheetOverlay = this.ngSidesheetOverlay;
+    this.sidesheet.ngSidesheetOverlayCloseOnClick = this.ngSidesheetOverlayCloseOnClick;
+    this.sidesheet.ngSidesheetOverlayCloseOnESC = this.ngSidesheetOverlayCloseOnESC;
 
     this.sidesheet.afterClosed.subscribe(() => {
       if (this.overlayRef != null) {
@@ -128,7 +155,9 @@ export class SidesheetDirective implements OnChanges, OnDestroy {
         this.sidesheet = null;
       }
 
-      this.close.emit();
+      if (typeof this.ngSidesheetClose === 'function') {
+        this.ngSidesheetClose.call(undefined);
+      }
     });
 
     return this.sidesheet.attach(

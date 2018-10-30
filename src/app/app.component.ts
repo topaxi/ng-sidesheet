@@ -8,4 +8,10 @@ import { Component } from '@angular/core';
 export class AppComponent {
   title = 'ng-sidesheet-app';
   open = true;
+
+  onClose = () => {
+    console.log('onClose');
+
+    this.open = false;
+  };
 }

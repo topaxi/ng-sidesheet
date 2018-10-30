@@ -8,7 +8,7 @@ import {
 } from '@angular/animations';
 
 export const sidesheetLeaveAnimate = animate(
-  '175ms cubic-bezier(0.5, 0.0, 1, 1)',
+  '150ms cubic-bezier(0.5, 0.0, 1, 1)',
   style({
     transform: 'translateX(100%)'
   })

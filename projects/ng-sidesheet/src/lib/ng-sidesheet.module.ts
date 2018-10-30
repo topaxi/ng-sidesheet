@@ -42,13 +42,13 @@ export const DEFAULT_CONFIG: SidesheetConfig = {
   ]
 })
 export class NgSidesheetModule {
-  static withConfig(config: SidesheetConfig) {
+  static withConfig(config: Partial<SidesheetConfig>) {
     return {
       ngModule: NgSidesheetModule,
       providers: [
         {
           provide: SIDESHEET_CONFIG,
-          useValue: config
+          useValue: { ...DEFAULT_CONFIG, ...config }
         }
       ]
     };

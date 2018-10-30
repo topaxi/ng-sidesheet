@@ -1,8 +1,9 @@
 <!--The content below is only a placeholder and can be replaced.-->
 <button (click)="open = true">Open Sheet</button>
 <button (click)="open = false">Close Sheet</button>
+<button (click)="backdrop = !backdrop">Toggle Overlay ({{backdrop}})</button>
 <ng-container *ngIf="open">
-<ng-container *ngSidesheet="'right'; close: onClose">
+<ng-container *ngSidesheet="'right'; overlay: backdrop; close: onClose">
 <div style="text-align:center">
   <h1>
     Welcome to {{ title }}!

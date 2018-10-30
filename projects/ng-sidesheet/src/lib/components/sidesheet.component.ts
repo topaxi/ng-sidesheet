@@ -40,7 +40,7 @@ export class SidesheetComponent
   readonly afterClosed = this._afterClosed.asObservable();
 
   @HostBinding('@sidesheetAnimation')
-  sidesheetAnimation = 'open';
+  sidesheetAnimation: 'open' | 'closed' = 'open';
 
   @ViewChild(PortalHostDirective)
   private readonly portalHost!: PortalHostDirective;
@@ -130,6 +130,11 @@ export class SidesheetComponent
       this._afterClosed.next();
       this._afterClosed.complete();
     }
+  }
+
+  open(): void {
+    this.sidesheetAnimation = 'open';
+    this.cd.markForCheck();
   }
 
   close(): void {

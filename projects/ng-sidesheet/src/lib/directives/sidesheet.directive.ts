@@ -144,6 +144,7 @@ export class SidesheetDirective<T> implements OnChanges, OnDestroy {
     );
 
     this.sidesheet = this.overlayRef.attach(sidesheetComponentRef).instance;
+    this.sidesheet.ngSidesheet = this.ngSidesheet;
     this.sidesheet.ngSidesheetOverlay = this.ngSidesheetOverlay;
     this.sidesheet.ngSidesheetOverlayCloseOnClick = this.ngSidesheetOverlayCloseOnClick;
     this.sidesheet.ngSidesheetOverlayCloseOnESC = this.ngSidesheetOverlayCloseOnESC;

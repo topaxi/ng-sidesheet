@@ -10,7 +10,8 @@
     "e2e": "ng e2e",
     "build_lib": "ng build ng-sidesheet && cp README.md dist/ng-sidesheet",
     "npm_pack": "cd dist/ng-sidesheet && npm pack",
-    "package": "npm run build_lib && npm run npm_pack"
+    "package": "npm run build_lib && npm run npm_pack",
+    "publish:gh-pages": "ng build --prod && npx ngh --dir=dist/ng-sidesheet-app"
   },
   "private": true,
   "dependencies": {
@@ -37,6 +38,7 @@
     "@types/jasmine": "~2.8.8",
     "@types/jasminewd2": "~2.0.3",
     "@types/node": "~8.9.4",
+    "angular-cli-ghpages": "^0.5.3",
     "codelyzer": "~4.3.0",
     "jasmine-core": "~2.99.1",
     "jasmine-spec-reporter": "~4.2.1",

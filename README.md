@@ -2,6 +2,9 @@
 
 A sidesheet directive for Angular.
 
+Currently the Sidesheet only supports one position,
+on the right side of the screen.
+
 ## Usage
 
 Import NgSidesheetModule in your App.

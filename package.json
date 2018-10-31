@@ -11,7 +11,7 @@
     "build_lib": "ng build ng-sidesheet && cp README.md dist/ng-sidesheet",
     "npm_pack": "cd dist/ng-sidesheet && npm pack",
     "package": "npm run build_lib && npm run npm_pack",
-    "publish:gh-pages": "ng build --prod && npx ngh --dir=dist/ng-sidesheet-app"
+    "publish:gh-pages": "ng build --prod --base-href=/ng-sidesheet/ && npx ngh --dir=dist/ng-sidesheet-app"
   },
   "private": true,
   "dependencies": {

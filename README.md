@@ -1,6 +1,94 @@
-# NgSidesheetApp
+# NgSidesheet
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 6.2.5.
+A sidesheet directive for Angular.
+
+## Usage
+
+Import NgSidesheetModule in your App.
+
+```typescript
+import { NgModule } from '@angular/core';
+import { NgSidesheetModule } from 'ng-sidesheet';
+
+@NgModule({
+  imports: [NgSidesheetModule]
+})
+export class AppModule {}
+```
+
+Use in template:
+
+```html
+<div *ngSidesheet>
+  This div is rendered in the sidesheet
+</div>
+```
+
+Render once the value is not nullish anymore:
+
+```html
+<div *ngSidesheet="'right' with model$ as model">
+  Only rendered once {{model}} is not null or undefined.
+</div>
+```
+
+Act on close event of Sidesheet:
+
+```typescript
+@Component({
+  template: `
+    <div *ngSidesheet="'right'; close: onSidesheetClose">
+      Sidesheet content
+    </div>
+  `
+})
+export class AppComponent {
+  onSidesheetClose: () => {
+    console.log('Sidesheet closed')
+  }
+}
+```
+
+Overwrite overlay settings:
+
+```typescript
+@Component({
+  template: `
+    <div *ngSidesheet="'right'; overlay: false">
+      Sidesheet content without overlay
+    </div>
+    <div *ngSidesheet="'right'; overlayCloseOnClick: false">
+      Don't close Sidesheet on overlay click
+    </div>
+    <div *ngSidesheet="'right'; overlayCloseOnESC: false">
+      Don't close Sidesheet on pressing ESC key
+    </div>
+  `
+})
+export class AppComponent {}
+```
+
+## Advanced configuration
+
+Globally overwrite Sidesheet default parameters:
+
+```typescript
+import { NgModule } from '@angular/core';
+import { NgSidesheetModule } from 'ng-sidesheet';
+
+@NgModule({
+  imports: [
+    NgSidesheetModule.withConfig({
+      closeButton: false, // disable/hide close button
+      scrollShadow: false, // disable shadow for vertical scrolling
+      overlay: false, // disable backdrop overlay
+      overlayCloseOnClick: false, // do not close sidesheet on overlay click
+      overlayCloseOnESC: false // do not close sidesheet on ESC key
+    })
+  ]
+})
+export class AppModule {}
+```
 
 ## Development server
 

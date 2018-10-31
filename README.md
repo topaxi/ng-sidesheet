@@ -27,7 +27,7 @@ Use in template:
 Render once the value is not nullish anymore:
 
 ```html
-<div *ngSidesheet="'right' with model$ as model">
+<div *ngSidesheet="'right' with model$ | async as model">
   Only rendered once {{model}} is not null or undefined.
 </div>
 ```
